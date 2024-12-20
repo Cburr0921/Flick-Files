@@ -1,0 +1,32 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-4">
+  <div class="row row-cols-1 row-cols-md-4 g-4">
+    <% movies.results.forEach(movie => { %>
+      <div class="col">
+        <div class="card h-100">
+          <img 
+            src="https://image.tmdb.org/t/p/w500<%= movie.poster_path %>" 
+            class="card-img-top" 
+            alt="<%= movie.title %>"
+          >
+          <div class="card-body">
+            <h5 class="card-title"><%= movie.title %></h5>
+            <p class="card-text"><%= movie.overview.substring(0, 150) %>...</p>
+            <p class="card-text">
+              <small class="text-muted">
+                Release Date: <%= new Date(movie.release_date).toLocaleDateString() %>
+              </small>
+            </p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge bg-primary">Rating: <%= movie.vote_average.toFixed(1) %>/10</span>
+              <a href="/movies/<%= movie.id %>" class="btn btn-outline-primary btn-sm">More Info</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

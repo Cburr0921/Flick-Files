@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const methodOverride = require("method-override");
 const mongoose = require("mongoose");
 const session = require('express-session');
+const moviesRouter = require('./routes/movies');
 
 const app = express();
 
@@ -17,11 +18,11 @@ mongoose.connection.on("connected", () => {
 });
 
 // Configure Express app 
-// app.set(...)
+app.set('view engine', 'ejs');
+app.set('views', './views');
 
 // Mount Middleware
-// app.use(...)
-
+app.use(express.json());
 // Morgan for logging HTTP requests
 app.use(morgan('dev'));
 // Static middleware for returning static assets to the browser
@@ -53,6 +54,8 @@ app.get('/', (req, res) => {
 app.use('/auth', require('./controllers/auth'));
 
 app.use('/unicorns', require('./controllers/unicorns'));
+
+app.use('/movies', moviesRouter);
 
 // Any requests that get this far must have a signed in 
 // user thanks to ensureSignedIn middleware
