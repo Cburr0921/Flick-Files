@@ -21,9 +21,9 @@
               <p class="card-text"><%= review.content %></p>
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">By <%= review.user ? review.user.username : 'Anonymous' %></small>
-                <button class="btn btn-sm btn-outline-danger unlike-btn" data-review-id="<%= review._id %>">
+                <a href="/reviews/<%= review._id %>/like" class="btn btn-sm btn-outline-danger">
                   <i class="bi bi-heart-fill"></i> Unlike
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -38,33 +38,5 @@
     </div>
   <% } %>
 </div>
-
-<script>
-document.querySelectorAll('.unlike-btn').forEach(button => {
-  button.addEventListener('click', async () => {
-    const reviewId = button.dataset.reviewId;
-    try {
-      const response = await fetch(`/likes/reviews/${reviewId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        // Remove the card after unliking
-        button.closest('.col-md-6').remove();
-        
-        // If no more reviews, show the empty state
-        if (document.querySelectorAll('.card').length === 0) {
-          location.reload();
-        }
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  });
-});
-</script>
 
 <%- include('../partials/footer') %>
