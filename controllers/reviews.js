@@ -9,7 +9,7 @@ module.exports = {
 
             res.render('reviews/index', {
                 reviews,
-                title: 'My Reviews'
+                title: 'Review History'
             });
         } catch (error) {
             console.error('Error fetching user reviews:', error);
@@ -137,7 +137,7 @@ module.exports = {
                 page,
                 totalPages,
                 sort,
-                title: 'Latest Reviews'
+                title: 'Community Reviews'
             });
         } catch (error) {
             console.error('Error fetching all reviews:', error);
@@ -171,6 +171,100 @@ module.exports = {
                 error: 'Unable to display review at this time.',
                 title: 'Error'
             });
+        }
+    },
+
+    // Toggle like on a review
+    async toggleLike(req, res) {
+        try {
+            const review = await Review.findById(req.params.id);
+            if (!review) {
+                return res.status(404).json({ error: 'Review not found' });
+            }
+
+            const userLikeIndex = review.likes.indexOf(req.user._id);
+            if (userLikeIndex === -1) {
+                review.likes.push(req.user._id);
+            } else {
+                review.likes.splice(userLikeIndex, 1);
+            }
+            await review.save();
+            
+            res.json({ 
+                likes: review.likes.length, 
+                isLiked: userLikeIndex === -1 
+            });
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            res.status(500).json({ error: 'Failed to toggle like' });
+        }
+    },
+
+    // Add a comment to a review
+    async addComment(req, res) {
+        try {
+            const review = await Review.findById(req.params.id);
+            if (!review) {
+                return res.status(404).json({ error: 'Review not found' });
+            }
+
+            const comment = {
+                user: req.user._id,
+                content: req.body.content.trim()
+            };
+
+            review.comments.push(comment);
+            await review.save();
+
+            // Populate the user info for the new comment
+            await Review.populate(review, {
+                path: 'comments.user',
+                select: 'username'
+            });
+
+            const newComment = review.comments[review.comments.length - 1];
+            res.json({
+                comment: {
+                    _id: newComment._id,
+                    content: newComment.content,
+                    user: {
+                        _id: req.user._id,
+                        username: req.user.username
+                    },
+                    createdAt: newComment.createdAt
+                }
+            });
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            res.status(500).json({ error: 'Failed to add comment' });
+        }
+    },
+
+    // Delete a comment
+    async deleteComment(req, res) {
+        try {
+            const review = await Review.findById(req.params.id);
+            if (!review) {
+                return res.status(404).json({ error: 'Review not found' });
+            }
+
+            const comment = review.comments.id(req.params.commentId);
+            if (!comment) {
+                return res.status(404).json({ error: 'Comment not found' });
+            }
+
+            // Only allow comment author or review author to delete
+            if (comment.user.toString() !== req.user._id.toString() && 
+                review.user.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: 'Not authorized to delete this comment' });
+            }
+
+            comment.remove();
+            await review.save();
+            res.json({ message: 'Comment deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            res.status(500).json({ error: 'Failed to delete comment' });
         }
     }
 };
