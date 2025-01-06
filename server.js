@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const session = require('express-session');
 const moviesCtrl = require('./controllers/movies');
 const usersCtrl = require('./controllers/users');
-const likesCtrl = require('./controllers/likes-controller');
+const likesCtrl = require('./controllers/likes');
 const reviewsCtrl = require('./controllers/reviews');
 const ensureSignedIn = require('./middleware/ensure-signed-in');
 
