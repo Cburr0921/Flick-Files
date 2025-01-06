@@ -82,7 +82,7 @@ app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);     // update
 app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);  // delete
 
 // Review interactions
-app.post('/reviews/:id/like', ensureSignedIn, reviewsCtrl.toggleLike);      // toggle like
+app.get('/reviews/:id/like', ensureSignedIn, reviewsCtrl.toggleLike);      // toggle like
 app.post('/reviews/:id/comments', ensureSignedIn, reviewsCtrl.addComment);   // add comment
 app.delete('/reviews/:id/comments/:commentId', ensureSignedIn, reviewsCtrl.deleteComment); // delete comment
 

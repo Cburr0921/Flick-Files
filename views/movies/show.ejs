@@ -62,7 +62,7 @@
                   placeholder="Share your thoughts about the movie..."
                 ></textarea>
               </div>
-              <button type="submit" class="btn btn-primary">Submit Review</button>
+              <a href="/movies/<%= movie.id %>/reviews" class="btn btn-primary">Submit Review</a>
             </form>
           </div>
         </div>
@@ -99,9 +99,7 @@
                   <% if (user && review.user._id.toString() === user._id.toString()) { %>
                     <div class="btn-group">
                       <a href="/reviews/<%= review._id %>/edit" class="btn btn-sm btn-outline-primary">Edit</a>
-                      <form action="/reviews/<%= review._id %>?_method=DELETE" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                      </form>
+                      <a href="/reviews/<%= review._id %>?_method=DELETE" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this review?');">Delete</a>
                     </div>
                   <% } %>
                 </div>
@@ -110,18 +108,22 @@
                   <small class="text-muted"><%= new Date(review.createdAt).toLocaleDateString() %></small>
                   <div class="d-flex gap-2 align-items-center">
                     <% if (user) { %>
-                      <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
-                        <button type="submit" class="btn btn-outline-primary btn-sm">
-                          <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
-                          <span><%= review.likes.length %></span>
-                        </button>
-                      </form>
+                      <a href="/reviews/<%= review._id %>/like" class="btn btn-outline-primary btn-sm">
+                        <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
+                        <span><%= review.likes.length %></span>
+                      </a>
                     <% } else { %>
                       <span class="text-muted">
                         <i class="bi bi-heart"></i> <%= review.likes.length %>
                       </span>
                     <% } %>
                     <a href="/reviews/<%= review._id %>" class="btn btn-link btn-sm">Read full review</a>
+                    <% if (user && review.user._id.toString() === user._id.toString()) { %>
+                      <div class="btn-group">
+                        <a href="/reviews/<%= review._id %>/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="/reviews/<%= review._id %>?_method=DELETE" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this review?');">Delete</a>
+                      </div>
+                    <% } %>
                   </div>
                 </div>
               </div>

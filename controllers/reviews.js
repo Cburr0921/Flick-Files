@@ -177,7 +177,9 @@ module.exports = {
     // Toggle like on a review
     async toggleLike(req, res) {
         try {
-            const review = await Review.findById(req.params.id);
+            const review = await Review.findById(req.params.id)
+                .populate('user');
+            
             if (!review) {
                 return res.redirect('back');
             }
@@ -192,7 +194,6 @@ module.exports = {
             
             res.redirect('back');
         } catch (error) {
-            console.error('Error toggling like:', error);
             res.redirect('back');
         }
     },
