@@ -148,28 +148,28 @@ module.exports = {
         }
     },
 
-    // Show a single review
+    // Show a specific review
     async show(req, res) {
         try {
             const review = await Review.findById(req.params.id)
-                .populate('user', 'username');
-
+                .populate('user');
+            
             if (!review) {
-                return res.render('error', {
-                    error: 'Review not found',
-                    title: 'Error'
+                return res.render('error', { 
+                    title: 'Error',
+                    error: 'Review not found'
                 });
             }
 
-            res.render('reviews/show', {
+            res.render('reviews/show', { 
+                title: `Review for ${review.movieTitle}`,
                 review,
-                title: `Review for ${review.movieTitle}`
+                user: req.user
             });
         } catch (error) {
-            console.error('Error showing review:', error);
             res.render('error', {
-                error: 'Unable to display review at this time.',
-                title: 'Error'
+                title: 'Error',
+                error: 'Unable to load review'
             });
         }
     },
@@ -179,7 +179,7 @@ module.exports = {
         try {
             const review = await Review.findById(req.params.id);
             if (!review) {
-                return res.status(404).json({ error: 'Review not found' });
+                return res.redirect('back');
             }
 
             const userLikeIndex = review.likes.indexOf(req.user._id);
@@ -190,13 +190,10 @@ module.exports = {
             }
             await review.save();
             
-            res.json({ 
-                likes: review.likes.length, 
-                isLiked: userLikeIndex === -1 
-            });
+            res.redirect('back');
         } catch (error) {
             console.error('Error toggling like:', error);
-            res.status(500).json({ error: 'Failed to toggle like' });
+            res.redirect('back');
         }
     },
 
@@ -205,66 +202,47 @@ module.exports = {
         try {
             const review = await Review.findById(req.params.id);
             if (!review) {
-                return res.status(404).json({ error: 'Review not found' });
+                return res.redirect('back');
             }
 
-            const comment = {
-                user: req.user._id,
-                content: req.body.content.trim()
-            };
-
-            review.comments.push(comment);
+            review.comments.push({
+                content: req.body.content,
+                user: req.user._id
+            });
             await review.save();
-
-            // Populate the user info for the new comment
-            await Review.populate(review, {
-                path: 'comments.user',
-                select: 'username'
-            });
-
-            const newComment = review.comments[review.comments.length - 1];
-            res.json({
-                comment: {
-                    _id: newComment._id,
-                    content: newComment.content,
-                    user: {
-                        _id: req.user._id,
-                        username: req.user.username
-                    },
-                    createdAt: newComment.createdAt
-                }
-            });
+            
+            res.redirect('back');
         } catch (error) {
             console.error('Error adding comment:', error);
-            res.status(500).json({ error: 'Failed to add comment' });
+            res.redirect('back');
         }
     },
 
-    // Delete a comment
+    // Delete a comment from a review
     async deleteComment(req, res) {
         try {
             const review = await Review.findById(req.params.id);
             if (!review) {
-                return res.status(404).json({ error: 'Review not found' });
+                return res.redirect('back');
             }
 
             const comment = review.comments.id(req.params.commentId);
             if (!comment) {
-                return res.status(404).json({ error: 'Comment not found' });
+                return res.redirect('back');
             }
 
             // Only allow comment author or review author to delete
-            if (comment.user.toString() !== req.user._id.toString() && 
-                review.user.toString() !== req.user._id.toString()) {
-                return res.status(403).json({ error: 'Not authorized to delete this comment' });
+            if (!req.user._id.equals(comment.user) && !req.user._id.equals(review.user)) {
+                return res.redirect('back');
             }
 
-            comment.remove();
+            comment.deleteOne();
             await review.save();
-            res.json({ message: 'Comment deleted successfully' });
+            
+            res.redirect('back');
         } catch (error) {
             console.error('Error deleting comment:', error);
-            res.status(500).json({ error: 'Failed to delete comment' });
+            res.redirect('back');
         }
     }
 };

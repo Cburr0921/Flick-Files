@@ -110,10 +110,12 @@
                   <small class="text-muted"><%= new Date(review.createdAt).toLocaleDateString() %></small>
                   <div class="d-flex gap-2 align-items-center">
                     <% if (user) { %>
-                      <a href="#" class="btn btn-outline-primary btn-sm like-btn" data-review-id="<%= review._id %>">
-                        <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
-                        <span class="like-count"><%= review.likes.length %></span>
-                      </a>
+                      <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                          <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
+                          <span><%= review.likes.length %></span>
+                        </button>
+                      </form>
                     <% } else { %>
                       <span class="text-muted">
                         <i class="bi bi-heart"></i> <%= review.likes.length %>
@@ -132,8 +134,5 @@
     </div>
   </div>
 </main>
-
-<!-- Include interactions.js -->
-<script src="/javascripts/interactions.js"></script>
 
 <%- include('../partials/footer') %>

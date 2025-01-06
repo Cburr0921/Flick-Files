@@ -37,7 +37,7 @@
                         </div>
                     <% } %>
 
-                    <p class="mb-4"><%= review.review %></p>
+                    <div class="review-content mb-4" style="white-space: pre-wrap;"><%= review.review %></div>
 
                     <div class="text-muted small mb-4">
                         <div>By <a href="/users/<%= review.user._id %>" class="text-decoration-none"><%= review.user.username %></a></div>
@@ -49,11 +49,12 @@
 
                     <div class="d-flex gap-2 mb-4">
                         <% if (user) { %>
-                            <a href="#" class="btn btn-outline-primary btn-sm like-button" data-review-id="<%= review._id %>"
-                                    data-liked="<%= review.likes.includes(user._id) %>">
-                                <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
-                                <span class="like-count"><%= review.likes.length %></span> likes
-                            </a>
+                            <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
+                                    <span><%= review.likes.length %></span> likes
+                                </button>
+                            </form>
                         <% } else { %>
                             <span class="text-muted">
                                 <i class="bi bi-heart"></i> <%= review.likes.length %> likes
@@ -67,56 +68,10 @@
                             </form>
                         <% } %>
                     </div>
-
-                    <!-- Comments Section -->
-                    <div class="comments-section">
-                        <h3 class="h5 mb-3">Comments</h3>
-                        
-                        <% if (user) { %>
-                            <form class="comment-form mb-4" data-review-id="<%= review._id %>">
-                                <div class="mb-3">
-                                    <textarea class="form-control" name="content" rows="2" placeholder="Write a comment..." required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
-                            </form>
-                        <% } else { %>
-                            <div class="alert alert-info">
-                                <a href="/auth/sign-in" class="alert-link">Sign in</a> to leave a comment.
-                            </div>
-                        <% } %>
-
-                        <div class="comments-list">
-                            <% review.comments.forEach(comment => { %>
-                                <div class="comment mb-3" id="comment-<%= comment._id %>">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <a href="/users/<%= comment.user._id %>" class="fw-bold text-decoration-none">
-                                                <%= comment.user.username %>
-                                            </a>
-                                            <small class="text-muted ms-2">
-                                                <%= new Date(comment.createdAt).toLocaleDateString() %>
-                                            </small>
-                                        </div>
-                                        <% if (user && (user._id.equals(comment.user._id) || user._id.equals(review.user._id))) { %>
-                                            <button class="btn btn-link btn-sm text-danger p-0 delete-comment"
-                                                    data-review-id="<%= review._id %>"
-                                                    data-comment-id="<%= comment._id %>">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        <% } %>
-                                    </div>
-                                    <div class="mt-1"><%= comment.content %></div>
-                                </div>
-                            <% }) %>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Include interactions.js -->
-<script src="/javascripts/interactions.js"></script>
 
 <%- include('../partials/footer') %>

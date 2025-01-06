@@ -27,7 +27,6 @@ router.post('/sign-up', async function(req, res) {
     // Update path to the functionality YOU want
     res.redirect(`/users/${user._id}`);
   } catch (e) {
-    console.log(e);
     res.render('auth/sign-up.ejs', { title: 'Sign Up!' });
   }
 });
@@ -49,10 +48,8 @@ router.post('/sign-in', async function(req, res) {
     // Update path to the functionality YOU want
     res.redirect(`/users/${user._id}`);
   } catch (e) {
-    console.log(e);
     res.render('auth/sign-in.ejs', { title: 'Sign In', error: 'Invalid Credentials' });
   }
 });
-
 
 module.exports = router;
