@@ -4,7 +4,10 @@ const morgan = require("morgan");
 const methodOverride = require("method-override");
 const mongoose = require("mongoose");
 const session = require('express-session');
-const moviesRouter = require('./routes/movies');
+const moviesCtrl = require('./controllers/movies');
+const usersCtrl = require('./controllers/users');
+const likesCtrl = require('./controllers/likes-controller');
+const ensureSignedIn = require('./middleware/ensure-signed-in');
 
 const app = express();
 
@@ -43,30 +46,48 @@ app.use(require('./middleware/add-user-to-locals-and-req'));
 
 // Routes
 
-// GET /  (home page functionality)
-app.get('/', (req, res) => {
-  res.render('home.ejs', { title: 'Home Page' });
+// Home page
+app.get('/', async (req, res) => {
+  try {
+    const Review = require('./models/review');
+
+    const trendingReviews = await Review.getPopular(6);
+    res.render('home', { 
+      user: req.user,
+      title: 'Home',
+      trendingReviews
+    });
+  } catch (err) {
+    console.error('Error fetching trending reviews:', err);
+    res.render('home', { 
+      user: req.user,
+      title: 'Home',
+      trendingReviews: []
+    });
+  }
 });
 
-// '/auth' is the "starts with" path that the request must match
-// The "starts with" path is pre-pended to the paths
-// defined in the router module
+// Movie routes - RESTful
+app.get('/movies', moviesCtrl.index);        
+app.get('/movies/:id', moviesCtrl.show);      
+
+// Review routes - RESTful (nested under movies)
+app.post('/movies/:movieId/reviews', ensureSignedIn, usersCtrl.createReview);       
+app.put('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.updateReview);    
+app.delete('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.deleteReview); 
+
+// User routes - RESTful
+app.get('/users', ensureSignedIn, usersCtrl.index);          
+app.get('/users/:id', ensureSignedIn, usersCtrl.show);       
+app.get('/users/:id/reviews', ensureSignedIn, usersCtrl.reviews); 
+
+// Likes routes
+app.get('/likes', ensureSignedIn, likesCtrl.index);
+app.post('/likes/reviews/:id', ensureSignedIn, likesCtrl.toggleLike);
+
+// Auth routes
 app.use('/auth', require('./controllers/auth'));
 
-app.use('/unicorns', require('./controllers/unicorns'));
-
-app.use('/movies', moviesRouter);
-
-// Any requests that get this far must have a signed in 
-// user thanks to ensureSignedIn middleware
-app.use(require('./middleware/ensure-signed-in'));
-// Any controller/routes mounted below here will have
-// ALL routes protected by the ensureSignedIn middleware
-
-
-
-
-
 app.listen(port, () => {
-  console.log(`The express app is ready on port ${port}!`);
+  console.log(`Express is listening on port:${port}`);
 });

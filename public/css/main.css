@@ -1,3 +1,8 @@
+:root {
+  --font-primary: 'Poppins', sans-serif;
+  --font-heading: 'Montserrat', sans-serif;
+}
+
 * {
   box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
@@ -8,6 +13,36 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  font-family: var(--font-primary);
+  line-height: 1.6;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
+  width: 100%;
+  font-family: var(--font-primary);
+  font-weight: 400;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.navbar-brand {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  font-family: var(--font-primary);
+  font-weight: 500;
 }
 
 /* Remove conflicting nav styles */
@@ -40,6 +75,7 @@ input,
 textarea,
 select {
   border: 0.3vmin solid black;
+  font-family: var(--font-primary);
 }
 
 form button[type='submit'] {
@@ -49,4 +85,70 @@ form button[type='submit'] {
 button:hover {
   background-color: lightslategray;
   color: white;
+}
+
+/* Card styles */
+.card-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.card-text {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+}
+
+/* Button styles */
+.btn {
+  font-family: var(--font-primary);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Hero section */
+.hero-section h1 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.hero-section .lead {
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: 1.25rem;
+}
+
+/* Profile styles */
+.profile-section .card {
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.rating-display {
+  color: #ffd700;
+  letter-spacing: 2px;
+}
+
+.rating-display .star {
+  font-size: 1.1rem;
+}
+
+.rating-display .star.filled {
+  color: #ffd700;
+}
+
+.rating-display .star:not(.filled) {
+  color: #e4e4e4;
+}
+
+.reviews-list .card {
+  transition: transform 0.2s ease;
+}
+
+.reviews-list .card:hover {
+  transform: translateY(-2px);
+}
+
+.review-meta .badge {
+  font-weight: 500;
 }

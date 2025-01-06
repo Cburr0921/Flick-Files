@@ -1,11 +1,24 @@
 <%- include('../partials/header.ejs') %>
 
-<form action="/auth/sign-in" method="POST">
-  <label for="username">Username:</label>
-  <input type="text" name="username" id="username" />
-  <label for="password">Password:</label>
-  <input type="password" name="password" id="password" />
-  <button type="submit">SIGN IN</button>
-</form>
+<main>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-4">
+        <h2 class="mb-4 text-center">Sign In</h2>
+        <form action="/auth/sign-in" method="POST">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username:</label>
+            <input type="text" class="form-control" name="username" id="username" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password:</label>
+            <input type="password" class="form-control" name="password" id="password" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
 
 <%- include('../partials/footer.ejs')%>

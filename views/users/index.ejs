@@ -1,0 +1,27 @@
+<%- include('../partials/header') %>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="list-group">
+        <% users.forEach(user => { %>
+          <a href="/users/<%= user._id %>" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+              <h5 class="mb-1"><%= user.username %></h5>
+              <small>Member since <%= user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A' %></small>
+            </div>
+            <small class="text-muted">Click to view profile</small>
+          </a>
+        <% }) %>
+      </div>
+
+      <% if (users.length === 0) { %>
+        <div class="alert alert-info mt-4">
+          No users found.
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

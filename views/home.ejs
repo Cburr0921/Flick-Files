@@ -1,3 +1,94 @@
 <%- include('./partials/header.ejs') %>
-<!-- Home Page's Content -->
+
+<main>
+  <div class="hero-section text-center py-5 bg-dark text-light">
+    <div class="container">
+      <h1 class="display-4 mb-4">Welcome to FlickFiles</h1>
+      <p class="lead mb-4">Your personal movie collection manager</p>
+      
+      <!-- Search Form -->
+      <div class="row justify-content-center mb-4">
+        <div class="col-md-8 col-lg-6">
+          <form action="/movies" method="GET" class="d-flex gap-2">
+            <input 
+              type="search" 
+              name="q" 
+              class="form-control form-control-lg" 
+              placeholder="Search for any movie..."
+              aria-label="Search movies"
+            >
+            <button class="btn btn-primary btn-lg px-4" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+
+      <% if (!user) { %>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+          <a href="/auth/sign-up" class="btn btn-primary btn-lg px-4 gap-3">Get Started</a>
+          <a href="/auth/sign-in" class="btn btn-outline-light btn-lg px-4">Sign In</a>
+        </div>
+      <% } else { %>
+        <a href="/movies" class="btn btn-primary btn-lg px-4">View Your Collection</a>
+      <% } %>
+    </div>
+  </div>
+<section class="trending-reviews py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-4">Trending Reviews</h2>
+    <div class="row g-4">
+      <% if (trendingReviews && trendingReviews.length > 0) { %>
+        <% trendingReviews.forEach(review => { %>
+          <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title"><%= review.movieTitle %></h5>
+                <p class="card-text text-truncate"><%= review.content %></p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">Rating: <%= review.rating %>/5</small>
+                  <small class="text-muted"><i class="bi bi-heart-fill text-danger"></i> <%= review.likes?.length || 0 %></small>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="col-12 text-center">
+          <p>No reviews available yet.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
+  <div class="features py-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body text-center">
+              <h3 class="card-title">Organize</h3>
+              <p class="card-text">Keep track of all your favorite movies in one place</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body text-center">
+              <h3 class="card-title">Discover</h3>
+              <p class="card-text">Find new movies and keep track of what you want to watch</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body text-center">
+              <h3 class="card-title">Share</h3>
+              <p class="card-text">Share your movie collections with friends and family</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
 <%- include('./partials/footer.ejs') %>

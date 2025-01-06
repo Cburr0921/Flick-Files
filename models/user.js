@@ -12,6 +12,12 @@ const userSchema = new Schema({
     type: String,
     required: true
   },
+  reviews: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Review'
+  }]
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model("User", userSchema);
