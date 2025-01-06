@@ -1,6 +1,25 @@
 const Review = require('../models/review');
 
 module.exports = {
+    // Get all reviews for the current user
+    async index(req, res) {
+        try {
+            const reviews = await Review.find({ user: req.user._id })
+                .sort({ createdAt: -1 });
+
+            res.render('reviews/index', {
+                reviews,
+                title: 'My Reviews'
+            });
+        } catch (error) {
+            console.error('Error fetching user reviews:', error);
+            res.render('error', {
+                error: 'Unable to fetch your reviews at this time.',
+                title: 'Error'
+            });
+        }
+    },
+
     // Create a new review
     async create(req, res) {
         try {
@@ -87,6 +106,71 @@ module.exports = {
         } catch (error) {
             console.error('Error updating review:', error);
             res.redirect(`back?error=Failed to update review`);
+        }
+    },
+
+    // Get all public reviews
+    async getAllReviews(req, res) {
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 12; // reviews per page
+            const sort = req.query.sort || 'date';
+            
+            let sortQuery = {};
+            if (sort === 'rating') {
+                sortQuery = { rating: -1, createdAt: -1 };
+            } else {
+                sortQuery = { createdAt: -1 };
+            }
+
+            const totalReviews = await Review.countDocuments();
+            const totalPages = Math.ceil(totalReviews / limit);
+
+            const reviews = await Review.find()
+                .sort(sortQuery)
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .populate('user', 'username');
+
+            res.render('reviews/all', {
+                reviews,
+                page,
+                totalPages,
+                sort,
+                title: 'Latest Reviews'
+            });
+        } catch (error) {
+            console.error('Error fetching all reviews:', error);
+            res.render('error', {
+                error: 'Unable to fetch reviews at this time.',
+                title: 'Error'
+            });
+        }
+    },
+
+    // Show a single review
+    async show(req, res) {
+        try {
+            const review = await Review.findById(req.params.id)
+                .populate('user', 'username');
+
+            if (!review) {
+                return res.render('error', {
+                    error: 'Review not found',
+                    title: 'Error'
+                });
+            }
+
+            res.render('reviews/show', {
+                review,
+                title: `Review for ${review.movieTitle}`
+            });
+        } catch (error) {
+            console.error('Error showing review:', error);
+            res.render('error', {
+                error: 'Unable to display review at this time.',
+                title: 'Error'
+            });
         }
     }
 };

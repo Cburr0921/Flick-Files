@@ -23,6 +23,14 @@
             <li class="nav-item">
               <a class="nav-link" href="/movies">Movies</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/reviews/all">Reviews</a>
+            </li>
+            <% if (user) { %>
+              <li class="nav-item">
+                <a class="nav-link" href="/reviews">My Reviews</a>
+              </li>
+            <% } %>
           </ul>
           <ul class="navbar-nav">
             <% if (user) { %>

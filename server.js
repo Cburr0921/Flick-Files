@@ -68,25 +68,28 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Movie routes - RESTful
-app.get('/movies', moviesCtrl.index);        
-app.get('/movies/:id', moviesCtrl.show);      
+// Movies - RESTful routes
+app.get('/movies', moviesCtrl.index);          // index
+app.get('/movies/:id', moviesCtrl.show);       // show
+
+// Reviews - RESTful routes
+app.get('/reviews', ensureSignedIn, reviewsCtrl.index);          // index (my reviews)
+app.get('/reviews/all', reviewsCtrl.getAllReviews);              // public reviews listing
+app.post('/reviews', ensureSignedIn, reviewsCtrl.create);        // create
+app.get('/reviews/:id', reviewsCtrl.show);                       // show
+app.get('/reviews/:id/edit', ensureSignedIn, reviewsCtrl.edit);  // edit
+app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);     // update
+app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);  // delete
+
+// Users - RESTful routes
+app.get('/users', ensureSignedIn, usersCtrl.index);             // index
+app.get('/users/:id', ensureSignedIn, usersCtrl.show);          // show
+app.get('/users/:id/reviews', ensureSignedIn, usersCtrl.reviews); // nested index
 
 // Review routes - RESTful (nested under movies)
 app.post('/movies/:movieId/reviews', ensureSignedIn, usersCtrl.createReview);       
 app.put('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.updateReview);    
 app.delete('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.deleteReview); 
-
-// Reviews routes
-app.post('/reviews', ensureSignedIn, reviewsCtrl.create);
-app.get('/reviews/:id/edit', ensureSignedIn, reviewsCtrl.edit);
-app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);
-app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);
-
-// User routes - RESTful
-app.get('/users', ensureSignedIn, usersCtrl.index);          
-app.get('/users/:id', ensureSignedIn, usersCtrl.show);       
-app.get('/users/:id/reviews', ensureSignedIn, usersCtrl.reviews); 
 
 // Likes routes
 app.get('/likes', ensureSignedIn, likesCtrl.index);

@@ -80,11 +80,18 @@
               <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <div>
-                    <h5 class="card-title mb-1">Review by <%= review.user.username %></h5>
+                    <h5 class="card-title mb-1">
+                        <a href="/users/<%= review.user.username %>" class="text-decoration-none">
+                            Review by <%= review.user.username %>
+                        </a>
+                    </h5>
                     <div class="rating">
                       <% for(let i = 0; i < 5; i++) { %>
-                        <i class="bi <%= i < review.rating ? 'bi-star-fill' : 'bi-star' %> text-warning"></i>
+                        <i class="bi <%= i < review.rating ? 'bi-star-fill' : 'bi-star' %> text-warning"
+                           role="img"
+                           aria-label="<%= i < review.rating ? 'Filled star' : 'Empty star' %>"></i>
                       <% } %>
+                      <span class="visually-hidden">Rating: <%= review.rating %> out of 5 stars</span>
                     </div>
                   </div>
                   <% if (user && review.user._id.toString() === user._id.toString()) { %>
@@ -99,10 +106,7 @@
                 <p class="card-text"><%= review.review %></p>
                 <div class="d-flex justify-content-between align-items-center">
                   <small class="text-muted"><%= new Date(review.createdAt).toLocaleDateString() %></small>
-                  <button class="btn btn-sm btn-outline-danger like-btn" data-review-id="<%= review._id %>">
-                    <i class="bi <%= review.likes && review.likes.includes(user?._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
-                    <span class="likes-count"><%= review.likes ? review.likes.length : 0 %></span>
-                  </button>
+                  <a href="/reviews/<%= review._id %>" class="btn btn-link btn-sm">Read full review</a>
                 </div>
               </div>
             </div>
