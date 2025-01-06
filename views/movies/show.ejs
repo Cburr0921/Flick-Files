@@ -86,12 +86,14 @@
                         </a>
                     </h5>
                     <div class="rating">
-                      <% for(let i = 0; i < 5; i++) { %>
-                        <i class="bi <%= i < review.rating ? 'bi-star-fill' : 'bi-star' %> text-warning"
-                           role="img"
-                           aria-label="<%= i < review.rating ? 'Filled star' : 'Empty star' %>"></i>
-                      <% } %>
-                      <span class="visually-hidden">Rating: <%= review.rating %> out of 5 stars</span>
+                      <div>
+                        <% for(let i = 0; i < 5; i++) { %>
+                          <i class="bi <%= i < review.rating ? 'bi-star-fill' : 'bi-star' %> text-warning"
+                             role="img"
+                             aria-label="<%= i < review.rating ? 'Filled star' : 'Empty star' %>"></i>
+                        <% } %>
+                      </div>
+                      <span class="rating-text"><%= review.rating %> out of 5</span>
                     </div>
                   </div>
                   <% if (user && review.user._id.toString() === user._id.toString()) { %>

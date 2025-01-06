@@ -8,7 +8,9 @@
           <a href="/users/<%= user._id %>" class="list-group-item list-group-item-action">
             <div class="d-flex w-100 justify-content-between align-items-center">
               <h5 class="mb-1"><%= user.username %></h5>
-              <small>Member since <%= user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A' %></small>
+              <div class="card-text">
+                <small class="member-since text-muted">Member since <%= user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A' %></small>
+              </div>
             </div>
             <small class="text-muted">Click to view profile</small>
           </a>
