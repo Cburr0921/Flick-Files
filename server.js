@@ -7,6 +7,7 @@ const session = require('express-session');
 const moviesCtrl = require('./controllers/movies');
 const usersCtrl = require('./controllers/users');
 const likesCtrl = require('./controllers/likes-controller');
+const reviewsCtrl = require('./controllers/reviews');
 const ensureSignedIn = require('./middleware/ensure-signed-in');
 
 const app = express();
@@ -75,6 +76,12 @@ app.get('/movies/:id', moviesCtrl.show);
 app.post('/movies/:movieId/reviews', ensureSignedIn, usersCtrl.createReview);       
 app.put('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.updateReview);    
 app.delete('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.deleteReview); 
+
+// Reviews routes
+app.post('/reviews', ensureSignedIn, reviewsCtrl.create);
+app.get('/reviews/:id/edit', ensureSignedIn, reviewsCtrl.edit);
+app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);
+app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);
 
 // User routes - RESTful
 app.get('/users', ensureSignedIn, usersCtrl.index);          
