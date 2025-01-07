@@ -24,19 +24,26 @@ module.exports = {
     async show(req, res) {
         try {
             const user = await User.findById(req.params.id);
-            const reviews = await Review.find({ user: req.params.id })
-                .sort({ createdAt: -1 });
-            
+            if (!user) {
+                return res.render('error', {
+                    title: 'Error',
+                    error: 'User not found'
+                });
+            }
+
+            const reviews = await Review.find({ user: user._id })
+                .sort('-createdAt')
+                .limit(5);
+
             res.render('users/show', {
-                title: user.username + "'s Profile",
-                reviews,
-                profileUser: user
+                title: `${user.username}'s Profile`,
+                profileUser: user,
+                reviews
             });
         } catch (error) {
-            console.error('Profile fetch error:', error);
             res.render('error', {
-                error: 'Unable to fetch user profile.',
-                title: 'Error'
+                title: 'Error',
+                error: 'Unable to load user profile'
             });
         }
     },
@@ -45,19 +52,25 @@ module.exports = {
     async reviews(req, res) {
         try {
             const user = await User.findById(req.params.id);
-            const reviews = await Review.find({ user: req.params.id })
-                .sort({ createdAt: -1 });
-            
+            if (!user) {
+                return res.render('error', {
+                    title: 'Error',
+                    error: 'User not found'
+                });
+            }
+
+            const reviews = await Review.find({ user: user._id })
+                .sort('-createdAt');
+
             res.render('users/reviews', {
-                title: user.username + "'s Reviews",
-                reviews,
-                profileUser: user
+                title: `${user.username}'s Reviews`,
+                profileUser: user,
+                reviews
             });
         } catch (error) {
-            console.error('Reviews fetch error:', error);
             res.render('error', {
-                error: 'Unable to fetch user reviews.',
-                title: 'Error'
+                title: 'Error',
+                error: 'Unable to load user reviews'
             });
         }
     },
@@ -65,39 +78,40 @@ module.exports = {
     // Create - Create a review
     async createReview(req, res) {
         try {
-            req.body.user = req.user._id;
-            req.body.movieId = req.params.movieId;
-            await Review.create(req.body);
-            res.redirect(`/movies/${req.params.movieId}`);
+            const review = await Review.create({
+                ...req.body,
+                user: req.user._id
+            });
+            res.redirect(`/movies/${req.params.movieId}?message=Review posted successfully`);
         } catch (error) {
-            console.error('Review creation error:', error);
-            res.redirect(`/movies/${req.params.movieId}`);
+            res.redirect(`/movies/${req.params.movieId}?error=Failed to create review`);
         }
     },
 
     // Update - Update a review
     async updateReview(req, res) {
         try {
-            await Review.findOneAndUpdate(
+            const review = await Review.findOneAndUpdate(
                 { _id: req.params.id, user: req.user._id },
                 req.body,
                 { new: true }
             );
-            res.redirect(`/movies/${req.params.movieId}`);
+            res.redirect(`/movies/${req.params.movieId}?message=Review updated successfully`);
         } catch (error) {
-            console.error('Review update error:', error);
-            res.redirect(`/movies/${req.params.movieId}`);
+            res.redirect(`/movies/${req.params.movieId}?error=Failed to update review`);
         }
     },
 
     // Delete - Delete a review
     async deleteReview(req, res) {
         try {
-            await Review.findOneAndDelete({ _id: req.params.id, user: req.user._id });
-            res.redirect(`/movies/${req.params.movieId}`);
+            await Review.findOneAndDelete({
+                _id: req.params.id,
+                user: req.user._id
+            });
+            res.redirect(`/movies/${req.params.movieId}?message=Review deleted successfully`);
         } catch (error) {
-            console.error('Review deletion error:', error);
-            res.redirect(`/movies/${req.params.movieId}`);
+            res.redirect(`/movies/${req.params.movieId}?error=Failed to delete review`);
         }
     }
 };

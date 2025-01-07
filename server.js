@@ -69,27 +69,27 @@ app.get('/', async (req, res) => {
 });
 
 // Movies - RESTful routes
-app.get('/movies', moviesCtrl.index);          // index
-app.get('/movies/:id', moviesCtrl.show);       // show
+app.get('/movies', moviesCtrl.index);         
+app.get('/movies/:id', moviesCtrl.show);       
 
 // Reviews - RESTful routes
-app.get('/reviews', ensureSignedIn, reviewsCtrl.index);          // index (my reviews)
-app.get('/reviews/all', reviewsCtrl.getAllReviews);              // public reviews listing
-app.post('/reviews', ensureSignedIn, reviewsCtrl.create);        // create
-app.get('/reviews/:id', reviewsCtrl.show);                       // show
-app.get('/reviews/:id/edit', ensureSignedIn, reviewsCtrl.edit);  // edit
-app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);     // update
-app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);  // delete
+app.get('/reviews', ensureSignedIn, reviewsCtrl.index);         
+app.get('/reviews/all', reviewsCtrl.getAllReviews);              
+app.post('/reviews', ensureSignedIn, reviewsCtrl.create);        
+app.get('/reviews/:id', reviewsCtrl.show);                       
+app.get('/reviews/:id/edit', ensureSignedIn, reviewsCtrl.edit); 
+app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);     
+app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);  
 
 // Review interactions
-app.post('/reviews/:id/like', ensureSignedIn, reviewsCtrl.toggleLike);      // toggle like
-app.post('/reviews/:id/comments', ensureSignedIn, reviewsCtrl.addComment);   // add comment
-app.delete('/reviews/:id/comments/:commentId', ensureSignedIn, reviewsCtrl.deleteComment); // delete comment
+app.post('/reviews/:id/like', ensureSignedIn, reviewsCtrl.toggleLike);      
+app.post('/reviews/:id/comments', ensureSignedIn, reviewsCtrl.addComment);  
+app.delete('/reviews/:id/comments/:commentId', ensureSignedIn, reviewsCtrl.deleteComment); 
 
 // Users - RESTful routes
-app.get('/users', ensureSignedIn, usersCtrl.index);             // index
-app.get('/users/:id', ensureSignedIn, usersCtrl.show);          // show
-app.get('/users/:id/reviews', ensureSignedIn, usersCtrl.reviews); // nested index
+app.get('/users', ensureSignedIn, usersCtrl.index);             
+app.get('/users/:id', ensureSignedIn, usersCtrl.show);          
+app.get('/users/:id/reviews', ensureSignedIn, usersCtrl.reviews); 
 
 // Review routes - RESTful (nested under movies)
 app.post('/movies/:movieId/reviews', ensureSignedIn, usersCtrl.createReview);       

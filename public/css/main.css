@@ -59,13 +59,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Keep your form styles */
-form {
+form:not(.filter-form) {
   display: grid;
   grid-template-columns: auto auto;
   gap: 2vmin;
 }
 
-form * {
+form:not(.filter-form) * {
   font-size: 2vmin;
   padding: 1vmin;
   border-radius: 1vmin;
@@ -173,7 +173,7 @@ button:hover {
   }
 
   /* Form adjustments */
-  form {
+  form:not(.filter-form) {
     grid-template-columns: 1fr;
     gap: 1rem;
   }

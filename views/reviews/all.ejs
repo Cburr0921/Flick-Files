@@ -3,24 +3,75 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Latest Reviews</h1>
-        <div class="dropdown">
-            <a href="#" class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                Sort by: <%= sort === 'rating' ? 'Highest Rated' : 'Most Recent' %>
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
-                <li><a class="dropdown-item <%= !sort || sort === 'date' ? 'active' : '' %>" href="/reviews/all?page=<%= page %>&sort=date">Most Recent</a></li>
-                <li><a class="dropdown-item <%= sort === 'rating' ? 'active' : '' %>" href="/reviews/all?page=<%= page %>&sort=rating">Highest Rated</a></li>
-            </ul>
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterSection">
+            <i class="bi bi-funnel"></i> Filter Reviews
+        </button>
+    </div>
+
+    <div class="collapse mb-4" id="filterSection">
+        <div class="card card-body">
+            <form action="/reviews/all" method="GET" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Rating</label>
+                        <select name="rating" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Ratings</option>
+                            <% for(let i = 5; i >= 1; i--) { %>
+                                <option value="<%= i %>" <%= filters?.rating == i ? 'selected' : '' %>><%= i %> Stars</option>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Recommendation</label>
+                        <select name="recommend" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Reviews</option>
+                            <option value="true" <%= filters?.recommend === 'true' ? 'selected' : '' %>>Recommended</option>
+                            <option value="false" <%= filters?.recommend === 'false' ? 'selected' : '' %>>Not Recommended</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Sort By</label>
+                        <select name="sort" class="form-select" onchange="this.form.submit()">
+                            <option value="newest" <%= filters?.sort === 'newest' ? 'selected' : '' %>>Newest First</option>
+                            <option value="oldest" <%= filters?.sort === 'oldest' ? 'selected' : '' %>>Oldest First</option>
+                            <option value="highest-rated" <%= filters?.sort === 'highest-rated' ? 'selected' : '' %>>Highest Rated</option>
+                            <option value="lowest-rated" <%= filters?.sort === 'lowest-rated' ? 'selected' : '' %>>Lowest Rated</option>
+                            <option value="movie-title" <%= filters?.sort === 'movie-title' ? 'selected' : '' %>>Movie Title</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Watched Date From</label>
+                        <input type="date" name="dateFrom" class="form-control" value="<%= filters?.dateFrom %>">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Watched Date To</label>
+                        <input type="date" name="dateTo" class="form-control" value="<%= filters?.dateTo %>">
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                        <a href="/reviews/all" class="btn btn-outline-secondary">Clear Filters</a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
     <% if (reviews.length === 0) { %>
         <div class="alert alert-info">
-            No reviews yet. 
-            <% if (user) { %>
-                <a href="/movies" class="alert-link">Browse movies</a> to write the first review!
+            <% if (Object.keys(filters).some(key => filters[key])) { %>
+                No reviews match your filters. <a href="/reviews/all" class="alert-link">Clear filters</a> to see all reviews.
             <% } else { %>
-                <a href="/auth/sign-in" class="alert-link">Sign in</a> to write the first review!
+                No reviews yet. 
+                <% if (user) { %>
+                    <a href="/movies" class="alert-link">Browse movies</a> to write the first review!
+                <% } else { %>
+                    <a href="/auth/sign-in" class="alert-link">Sign in</a> to write the first review!
+                <% } %>
             <% } %>
         </div>
     <% } else { %>
@@ -42,31 +93,32 @@
                                            role="img"
                                            aria-label="<%= i <= review.rating ? 'Filled star' : 'Empty star' %>"></i>
                                     <% } %>
-                                    <span class="visually-hidden">Rating: <%= review.rating %> out of 5 stars</span>
                                 </div>
-                                <% if (review.recommend) { %>
-                                    <span class="badge bg-success">
-                                        <i class="bi bi-hand-thumbs-up-fill"></i> Recommended
-                                    </span>
-                                <% } %>
+                                <small class="text-muted">
+                                    by <%= review.user ? review.user.username : 'Anonymous' %>
+                                </small>
                             </div>
 
-                            <% if (review.title) { %>
-                                <h3 class="h6 mb-2"><%= review.title %></h3>
-                            <% } %>
+                            <p class="card-text"><%= review.review %></p>
 
-                            <p class="card-text">
-                                <%= review.review.length > 150 ? review.review.substring(0, 150) + '...' : review.review %>
-                            </p>
-
-                            <div class="mt-3">
-                                <div class="text-muted small mb-2">
-                                    By <a href="/users/<%= review.user._id %>" class="text-decoration-none">
-                                        <%= review.user.username %>
-                                    </a>
-                                    on <%= new Date(review.createdAt).toLocaleDateString() %>
+                            <div class="text-muted small mb-3">
+                                <div>Reviewed on <%= new Date(review.createdAt).toLocaleDateString() %></div>
+                                <div>
+                                    <%= review.recommend ? 'Recommended' : 'Not Recommended' %>
+                                    <% if (review.spoilerAlert) { %>
+                                        · Contains Spoilers
+                                    <% } %>
                                 </div>
-                                <a href="/reviews/<%= review._id %>" class="btn btn-outline-primary btn-sm">Read full review</a>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
+                                    <a href="#" class="btn btn-outline-primary btn-sm" onclick="event.preventDefault(); this.closest('form').submit();">
+                                        <i class="bi bi-heart<%= review.likes?.includes(user?._id) ? '-fill' : '' %>"></i>
+                                        <%= review.likes?.length || 0 %>
+                                    </a>
+                                </form>
+                                <a href="/reviews/<%= review._id %>" class="btn btn-outline-secondary btn-sm">View Details</a>
                             </div>
                         </div>
                     </div>
@@ -75,11 +127,13 @@
         </div>
 
         <% if (totalPages > 1) { %>
-            <nav aria-label="Review pages" class="mt-4">
+            <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">
                     <% for(let i = 1; i <= totalPages; i++) { %>
                         <li class="page-item <%= page === i ? 'active' : '' %>">
-                            <a class="page-link" href="/reviews/all?page=<%= i %>&sort=<%= sort || 'date' %>"><%= i %></a>
+                            <a class="page-link" href="/reviews/all?page=<%= i %>&<%= new URLSearchParams({...filters, page: i}).toString() %>">
+                                <%= i %>
+                            </a>
                         </li>
                     <% } %>
                 </ul>

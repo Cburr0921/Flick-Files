@@ -15,7 +15,6 @@ module.exports = {
         likedReviews
       });
     } catch (err) {
-      console.error('Error fetching liked content:', err);
       res.render('error', {
         title: 'Error',
         error: 'Unable to fetch your liked content'
@@ -47,7 +46,6 @@ module.exports = {
         hasLiked: !hasLiked
       });
     } catch (err) {
-      console.error('Error updating like:', err);
       res.status(500).json({ error: 'Unable to update like' });
     }
   }

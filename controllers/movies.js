@@ -16,7 +16,6 @@ module.exports = {
                 q: searchQuery
             });
         } catch (error) {
-            console.error('Error in movies index:', error);
             res.render('error', { 
                 error: 'Unable to fetch movies at this time.',
                 title: 'Error'
@@ -39,7 +38,6 @@ module.exports = {
                 q: req.query.q || '' 
             });
         } catch (error) {
-            console.error('Error in movie show:', error);
             res.render('error', { 
                 error: 'Unable to fetch movie details at this time.',
                 title: 'Error'
