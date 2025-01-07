@@ -1,42 +1,44 @@
 <%- include('../partials/header') %>
 
-<div class="container py-4">
-  <% if (likedReviews && likedReviews.length > 0) { %>
-    <div class="row g-4">
-      <% likedReviews.forEach(review => { %>
-        <div class="col-md-6 col-lg-4">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title"><%= review.movieTitle %></h5>
-              <div class="d-flex align-items-center mb-2">
-                <div class="rating me-2">
-                  <% for(let i = 0; i < 5; i++) { %>
-                    <i class="bi <%= i < review.rating ? 'bi-star-fill' : 'bi-star' %> text-warning"></i>
-                  <% } %>
+<main class="min-vh-100 d-flex flex-column">
+    <div class="container py-4 flex-grow-1">
+      <% if (likedReviews && likedReviews.length > 0) { %>
+        <div class="row g-4">
+          <% likedReviews.forEach(review => { %>
+            <div class="col-md-6 col-lg-4">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title"><%= review.movieTitle %></h5>
+                  <div class="d-flex align-items-center mb-2">
+                    <div class="rating me-2">
+                      <% for(let i = 0; i < 5; i++) { %>
+                        <i class="bi <%= i < review.rating ? 'bi-star-fill' : 'bi-star' %> text-warning"></i>
+                      <% } %>
+                    </div>
+                    <small class="text-muted"><%= review.rating %>/5</small>
+                  </div>
+                  <p class="card-text"><%= review.content %></p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">By <%= review.user ? review.user.username : 'Anonymous' %></small>
+                    <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
+                      <a href="#" class="btn btn-sm btn-outline-danger" onclick="event.preventDefault(); this.closest('form').submit();">
+                        <i class="bi bi-heart-fill"></i> Unlike
+                      </a>
+                    </form>
+                  </div>
                 </div>
-                <small class="text-muted"><%= review.rating %>/5</small>
-              </div>
-              <p class="card-text"><%= review.content %></p>
-              <div class="d-flex justify-content-between align-items-center">
-                <small class="text-muted">By <%= review.user ? review.user.username : 'Anonymous' %></small>
-                <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
-                  <a href="#" class="btn btn-sm btn-outline-danger" onclick="event.preventDefault(); this.closest('form').submit();">
-                    <i class="bi bi-heart-fill"></i> Unlike
-                  </a>
-                </form>
               </div>
             </div>
-          </div>
+          <% }); %>
         </div>
-      <% }); %>
+      <% } else { %>
+        <div class="text-center py-5">
+          <h3>No liked content yet</h3>
+          <p class="text-muted">Start exploring reviews and like the ones you enjoy!</p>
+          <a href="/movies" class="btn btn-primary">Browse Movies</a>
+        </div>
+      <% } %>
     </div>
-  <% } else { %>
-    <div class="text-center py-5">
-      <h3>No liked content yet</h3>
-      <p class="text-muted">Start exploring reviews and like the ones you enjoy!</p>
-      <a href="/movies" class="btn btn-primary">Browse Movies</a>
-    </div>
-  <% } %>
-</div>
+</main>
 
 <%- include('../partials/footer') %>
