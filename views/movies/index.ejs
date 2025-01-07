@@ -12,7 +12,7 @@
           value="<%= locals.q %>"
           aria-label="Search"
         >
-        <button class="btn btn-primary" type="submit">Search</button>
+        <a href="#" class="btn btn-primary" onclick="event.preventDefault(); this.closest('form').submit();">Search</a>
       </form>
     </div>
   </div>
