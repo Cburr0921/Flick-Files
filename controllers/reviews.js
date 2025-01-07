@@ -216,25 +216,18 @@ module.exports = {
     async show(req, res) {
         try {
             const review = await Review.findById(req.params.id)
-                .populate('user');
-            
-            if (!review) {
-                return res.render('error', { 
-                    title: 'Error',
-                    error: 'Review not found'
+                .populate('user')
+                .populate({
+                    path: 'comments.user',
+                    select: 'username'
                 });
+            if (!review) {
+                return res.redirect('/reviews');
             }
-
-            res.render('reviews/show', { 
-                review,
-                title: `Review for ${review.movieTitle}`,
-                user: req.user
-            });
-        } catch (error) {
-            res.render('error', {
-                title: 'Error',
-                error: 'Unable to load review'
-            });
+            res.render('reviews/show', { review, title: review.movieTitle });
+        } catch (err) {
+            console.error(err);
+            res.redirect('/reviews');
         }
     },
 
@@ -267,18 +260,19 @@ module.exports = {
         try {
             const review = await Review.findById(req.params.id);
             if (!review) {
-                return res.redirect('back?error=Review not found');
+                return res.redirect('/reviews');
             }
-
+            
             review.comments.push({
-                content: req.body.content,
-                user: req.user._id
+                user: req.user._id,
+                content: req.body.content
             });
-
+            
             await review.save();
-            res.redirect('back?message=Comment added successfully');
-        } catch (error) {
-            res.redirect('back?error=Failed to add comment');
+            res.redirect(`/reviews/${review._id}`);
+        } catch (err) {
+            console.error(err);
+            res.redirect(`/reviews/${req.params.id}`);
         }
     },
 
@@ -287,23 +281,25 @@ module.exports = {
         try {
             const review = await Review.findById(req.params.id);
             if (!review) {
-                return res.redirect('back?error=Review not found');
+                return res.redirect('/reviews');
             }
 
             const comment = review.comments.id(req.params.commentId);
             if (!comment) {
-                return res.redirect('back?error=Comment not found');
+                return res.redirect(`/reviews/${review._id}`);
             }
 
-            if (comment.user.toString() !== req.user._id.toString()) {
-                return res.redirect('back?error=Unauthorized');
+            // Check if the current user is the comment author
+            if (!req.user._id.equals(comment.user)) {
+                return res.redirect(`/reviews/${review._id}`);
             }
 
-            comment.remove();
+            review.comments.pull(req.params.commentId);
             await review.save();
-            res.redirect('back?message=Comment deleted successfully');
-        } catch (error) {
-            res.redirect('back?error=Failed to delete comment');
+            res.redirect(`/reviews/${review._id}`);
+        } catch (err) {
+            console.error(err);
+            res.redirect(`/reviews/${req.params.id}`);
         }
     }
 };

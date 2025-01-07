@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h1 class="h3 mb-3">
                         <a href="/movies/<%= review.movieId %>" class="text-decoration-none">
@@ -50,10 +50,10 @@
                     <div class="d-flex gap-2 mb-4">
                         <% if (user) { %>
                             <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
-                                <a href="#" class="btn btn-outline-primary btn-sm" onclick="event.preventDefault(); this.closest('form').submit();">
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-heart<%= review.likes.includes(user._id) ? '-fill' : '' %>"></i>
                                     <%= review.likes.length %>
-                                </a>
+                                </button>
                             </form>
                         <% } else { %>
                             <span class="text-muted">
@@ -63,9 +63,54 @@
 
                         <% if (user && user._id.equals(review.user._id)) { %>
                             <a href="/reviews/<%= review._id %>/edit" class="btn btn-outline-secondary btn-sm">Edit</a>
-                            <a href="/reviews/<%= review._id %>?_method=DELETE" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this review?');">Delete</a>
+                            <form action="/reviews/<%= review._id %>?_method=DELETE" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this review?');">Delete</button>
+                            </form>
                         <% } %>
                     </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="h5 mb-4">Comments (<%= review.comments ? review.comments.length : 0 %>)</h3>
+                    
+                    <% if (user) { %>
+                        <form action="/reviews/<%= review._id %>/comments" method="POST" class="mb-4">
+                            <div class="mb-3">
+                                <textarea class="form-control" name="content" rows="2" placeholder="Add a comment..." required maxlength="500"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post Comment</button>
+                        </form>
+                    <% } %>
+
+                    <% if (review.comments && review.comments.length > 0) { %>
+                        <div class="comments-list">
+                            <% review.comments.forEach(comment => { %>
+                                <div class="comment border-bottom py-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-bold"><%= comment.user.username %></div>
+                                            <div class="text-muted small">
+                                                <%= new Date(comment.createdAt).toLocaleDateString() %>
+                                            </div>
+                                            <div class="mt-2"><%= comment.content %></div>
+                                        </div>
+                                        <% if (user && user._id.equals(comment.user._id)) { %>
+                                            <form action="/reviews/<%= review._id %>/comments/<%= comment._id %>?_method=DELETE" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-link text-danger p-0" onclick="return confirm('Delete this comment?');">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <p class="text-muted">No comments yet. Be the first to comment!</p>
+                    <% } %>
                 </div>
             </div>
         </div>

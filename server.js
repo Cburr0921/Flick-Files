@@ -4,10 +4,6 @@ const morgan = require("morgan");
 const methodOverride = require("method-override");
 const mongoose = require("mongoose");
 const session = require('express-session');
-const moviesCtrl = require('./controllers/movies');
-const usersCtrl = require('./controllers/users');
-const likesCtrl = require('./controllers/likes');
-const reviewsCtrl = require('./controllers/reviews');
 const ensureSignedIn = require('./middleware/ensure-signed-in');
 
 const app = express();
@@ -27,15 +23,10 @@ app.set('views', './views');
 
 // Mount Middleware
 app.use(express.json());
-// Morgan for logging HTTP requests
 app.use(morgan('dev'));
-// Static middleware for returning static assets to the browser
 app.use(express.static('public'));
-// Middleware to parse URL-encoded data from forms
 app.use(express.urlencoded({ extended: false }));
-// Middleware for using HTTP verbs such as PUT or DELETE
 app.use(methodOverride("_method"));
-// Session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -45,62 +36,12 @@ app.use(session({
 // Add the user (if logged in) to req.user & res.locals
 app.use(require('./middleware/add-user-to-locals-and-req'));
 
-// Routes
-
-// Home page
-app.get('/', async (req, res) => {
-  try {
-    const Review = require('./models/review');
-
-    const trendingReviews = await Review.getPopular(6);
-    res.render('home', { 
-      user: req.user,
-      title: 'Home',
-      trendingReviews
-    });
-  } catch (err) {
-    console.error('Error fetching trending reviews:', err);
-    res.render('home', { 
-      user: req.user,
-      title: 'Home',
-      trendingReviews: []
-    });
-  }
-});
-
-// Movies - RESTful routes
-app.get('/movies', moviesCtrl.index);         
-app.get('/movies/:id', moviesCtrl.show);       
-
-// Reviews - RESTful routes
-app.get('/reviews', ensureSignedIn, reviewsCtrl.index);         
-app.get('/reviews/all', reviewsCtrl.getAllReviews);              
-app.post('/reviews', ensureSignedIn, reviewsCtrl.create);        
-app.get('/reviews/:id', reviewsCtrl.show);                       
-app.get('/reviews/:id/edit', ensureSignedIn, reviewsCtrl.edit); 
-app.put('/reviews/:id', ensureSignedIn, reviewsCtrl.update);     
-app.delete('/reviews/:id', ensureSignedIn, reviewsCtrl.delete);  
-
-// Review interactions
-app.post('/reviews/:id/like', ensureSignedIn, reviewsCtrl.toggleLike);      
-app.post('/reviews/:id/comments', ensureSignedIn, reviewsCtrl.addComment);  
-app.delete('/reviews/:id/comments/:commentId', ensureSignedIn, reviewsCtrl.deleteComment); 
-
-// Users - RESTful routes
-app.get('/users', ensureSignedIn, usersCtrl.index);             
-app.get('/users/:id', ensureSignedIn, usersCtrl.show);          
-app.get('/users/:id/reviews', ensureSignedIn, usersCtrl.reviews); 
-
-// Review routes - RESTful (nested under movies)
-app.post('/movies/:movieId/reviews', ensureSignedIn, usersCtrl.createReview);       
-app.put('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.updateReview);    
-app.delete('/movies/:movieId/reviews/:id', ensureSignedIn, usersCtrl.deleteReview); 
-
-// Likes routes
-app.get('/likes', ensureSignedIn, likesCtrl.index);
-app.post('/likes/reviews/:id', ensureSignedIn, likesCtrl.toggleLike);
-
-// Auth routes
+// Mount Routes
+app.use('/', require('./routes/index'));
+app.use('/movies', require('./routes/movies'));
+app.use('/reviews', require('./routes/reviews'));
+app.use('/users', require('./routes/users'));
+app.use('/likes', require('./routes/likes'));
 app.use('/auth', require('./controllers/auth'));
 
 app.listen(port, () => {

@@ -62,6 +62,7 @@ const reviewSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     }],
+    comments: [commentSchema],
     spoilerAlert: {
         type: Boolean,
         default: false
