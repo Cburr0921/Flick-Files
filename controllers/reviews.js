@@ -4,7 +4,8 @@ module.exports = {
     // Get all reviews for the current user
     async index(req, res) {
         try {
-            const reviews = await Review.find({ user: req.user._id })
+            const query = { user: req.user._id };
+            const reviews = await Review.find(query)
                 .sort({ createdAt: -1 });
 
             res.render('reviews/index', {
@@ -113,31 +114,24 @@ module.exports = {
     async getAllReviews(req, res) {
         try {
             const page = parseInt(req.query.page) || 1;
-            const limit = 12; // reviews per page
             const sort = req.query.sort || 'date';
+            const limit = 12;
             
-            let sortQuery = {};
-            if (sort === 'rating') {
-                sortQuery = { rating: -1, createdAt: -1 };
-            } else {
-                sortQuery = { createdAt: -1 };
-            }
-
-            const totalReviews = await Review.countDocuments();
-            const totalPages = Math.ceil(totalReviews / limit);
-
-            const reviews = await Review.find()
-                .sort(sortQuery)
+            const query = {};
+            const sortField = sort === 'rating' ? 'rating' : 'createdAt';
+            
+            const reviews = await Review.find(query)
+                .sort({ [sortField]: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit)
                 .populate('user', 'username');
 
-            res.render('reviews/all', {
-                reviews,
-                page,
-                totalPages,
+            res.render('reviews/all', { 
+                reviews, 
+                page, 
                 sort,
-                title: 'Community Reviews'
+                totalPages: Math.ceil(await Review.countDocuments(query) / limit),
+                title: 'Community Reviews' 
             });
         } catch (error) {
             console.error('Error fetching all reviews:', error);

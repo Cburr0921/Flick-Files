@@ -152,3 +152,89 @@ button:hover {
 .review-meta .badge {
   font-weight: 500;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  /* Typography adjustments */
+  .display-4 {
+    font-size: 2.5rem;
+  }
+  
+  .lead {
+    font-size: 1.1rem;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+
+  /* Form adjustments */
+  form {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  form button[type='submit'] {
+    grid-column: span 1;
+  }
+
+  /* Touch-friendly inputs */
+  input,
+  textarea,
+  select,
+  .btn {
+    min-height: 44px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    padding: 0.5rem 1rem;
+  }
+
+  /* Card adjustments */
+  .card-img-top {
+    height: 200px;
+    object-fit: cover;
+  }
+
+  /* Navbar adjustments */
+  .navbar {
+    padding: 0.5rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.25rem;
+  }
+
+  /* Spacing adjustments */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .hero-section {
+    padding: 2rem 0;
+  }
+
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  /* Review cards */
+  .reviews-list .card:hover {
+    transform: none; /* Disable hover effect on mobile */
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+  .card:hover,
+  .reviews-list .card:hover {
+    transform: none;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+}

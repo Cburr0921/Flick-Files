@@ -21,9 +21,11 @@
               <p class="card-text"><%= review.content %></p>
               <div class="d-flex justify-content-between align-items-center">
                 <small class="text-muted">By <%= review.user ? review.user.username : 'Anonymous' %></small>
-                <a href="/reviews/<%= review._id %>/like" class="btn btn-sm btn-outline-danger">
-                  <i class="bi bi-heart-fill"></i> Unlike
-                </a>
+                <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
+                  <a href="#" class="btn btn-sm btn-outline-danger" onclick="event.preventDefault(); this.closest('form').submit();">
+                    <i class="bi bi-heart-fill"></i> Unlike
+                  </a>
+                </form>
               </div>
             </div>
           </div>

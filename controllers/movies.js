@@ -5,22 +5,15 @@ module.exports = {
     // Get popular movies or search results
     async index(req, res) {
         try {
-            let movies;
-            let title = 'Popular Movies';
-            const searchQuery = req.query.q;
-
-            // If search query exists, perform search
-            if (searchQuery) {
-                movies = await tmdb.searchMovie({ query: searchQuery });
-                title = `Search Results for "${searchQuery}"`;
-            } else {
-                movies = await tmdb.moviePopular();
-            }
-
+            const searchQuery = req.query.q || '';
+            const movies = searchQuery 
+                ? await tmdb.searchMovie({ query: searchQuery })
+                : await tmdb.moviePopular();
+            
             res.render('movies/index', { 
                 movies,
-                title,
-                q: searchQuery || ''
+                title: searchQuery ? `Search Results for "${searchQuery}"` : 'Popular Movies',
+                q: searchQuery
             });
         } catch (error) {
             console.error('Error in movies index:', error);

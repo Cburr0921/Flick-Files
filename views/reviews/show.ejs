@@ -49,10 +49,12 @@
 
                     <div class="d-flex gap-2 mb-4">
                         <% if (user) { %>
-                            <a href="/reviews/<%= review._id %>/like" class="btn btn-outline-primary btn-sm" onclick="event.preventDefault(); this.closest('form').submit();">
-                                <i class="bi <%= review.likes.includes(user._id) ? 'bi-heart-fill' : 'bi-heart' %>"></i>
-                                <span><%= review.likes.length %></span> likes
-                            </a>
+                            <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
+                                <a href="#" class="btn btn-outline-primary btn-sm" onclick="event.preventDefault(); this.closest('form').submit();">
+                                    <i class="bi bi-heart<%= review.likes.includes(user._id) ? '-fill' : '' %>"></i>
+                                    <%= review.likes.length %>
+                                </a>
+                            </form>
                         <% } else { %>
                             <span class="text-muted">
                                 <i class="bi bi-heart"></i> <%= review.likes.length %> likes
