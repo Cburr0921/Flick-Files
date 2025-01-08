@@ -49,15 +49,16 @@
 
                     <div class="d-flex gap-2 mb-4">
                         <% if (user) { %>
-                            <form action="/reviews/<%= review._id %>/like" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                            <form action="/reviews/<%= review._id %>/like" method="POST" style="height: 31px;">
+                                <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center" style="min-width: 70px; height: 31px;">
                                     <i class="bi bi-heart<%= review.likes.includes(user._id) ? '-fill' : '' %>"></i>
-                                    <%= review.likes.length %>
+                                    <span class="ms-1"><%= review.likes.length %></span>
                                 </button>
                             </form>
                         <% } else { %>
-                            <span class="text-muted">
-                                <i class="bi bi-heart"></i> <%= review.likes.length %> likes
+                            <span class="text-muted d-flex align-items-center" style="height: 31px;">
+                                <i class="bi bi-heart"></i>
+                                <span class="ms-1"><%= review.likes.length %> likes</span>
                             </span>
                         <% } %>
 
