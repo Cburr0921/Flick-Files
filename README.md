@@ -48,7 +48,7 @@
  - The API used in the app was obtained from [TMDB](https://www.themoviedb.org/)
  
 ### Database 
-- The database used in the app is [MongoDB](https://www.mongodb.com/).
+- The app uses [MongoDB](https://www.mongodb.com/) as the database with [Mongoose](https://mongoosejs.com/) ODM for data modeling and management.
     
 ## :satellite: Upcoming Features
 - AAU, I want to upload a profile picture so that I can personalize my account.
