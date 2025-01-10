@@ -1,305 +1,325 @@
 const Review = require('../models/review');
+const express = require('express');
+const router = express.Router();
 
-module.exports = {
-    // Get all reviews for the current user
-    async index(req, res) {
-        try {
-            const query = { user: req.user._id };
-            
-            // Apply filters
-            if (req.query.rating) {
-                query.rating = parseInt(req.query.rating);
-            }
-            
-            if (req.query.recommend === 'true' || req.query.recommend === 'false') {
-                query.recommend = req.query.recommend === 'true';
-            }
-
-            // Date filter
-            if (req.query.dateFrom || req.query.dateTo) {
-                query.watchedAt = {};
-                if (req.query.dateFrom) {
-                    query.watchedAt.$gte = new Date(req.query.dateFrom);
-                }
-                if (req.query.dateTo) {
-                    query.watchedAt.$lte = new Date(req.query.dateTo);
-                }
-            }
-
-            // Sorting
-            const sortOptions = {
-                newest: { createdAt: -1 },
-                oldest: { createdAt: 1 },
-                'highest-rated': { rating: -1 },
-                'lowest-rated': { rating: 1 },
-                'movie-title': { movieTitle: 1 }
-            };
-            
-            const sortBy = sortOptions[req.query.sort] || sortOptions.newest;
-
-            const reviews = await Review.find(query)
-                .populate('user')  
-                .sort(sortBy);
-
-            res.render('reviews/index', {
-                reviews,
-                title: 'Review History',
-                filters: {
-                    rating: req.query.rating,
-                    recommend: req.query.recommend,
-                    dateFrom: req.query.dateFrom,
-                    dateTo: req.query.dateTo,
-                    sort: req.query.sort || 'newest'
-                }
-            });
-        } catch (error) {
-            res.render('error', {
-                error: 'Unable to fetch your reviews at this time.',
-                title: 'Error'
-            });
+// Get all reviews for the current user
+router.get('/', async function(req, res) {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = 12;
+        const query = { user: req.user._id };
+        
+        // Apply filters
+        if (req.query.rating) {
+            query.rating = parseInt(req.query.rating);
         }
-    },
-
-    // Create a new review
-    async create(req, res) {
-        try {
-            const review = new Review({
-                user: req.user._id,
-                movieId: req.body.movieId,
-                movieTitle: req.body.movieTitle,
-                rating: parseInt(req.body.rating),
-                review: req.body.review,
-                title: req.body.title,
-                recommend: req.body.recommend === 'true',
-                spoilerAlert: req.body.spoilerAlert === 'true',
-                watchedAt: req.body.watchedAt || new Date()
-            });
-
-            await review.save();
-            
-            // Redirect back to the movie page
-            res.redirect(`/movies/${req.body.movieId}?message=Review created successfully`);
-        } catch (error) {
-            res.redirect(`/movies/${req.body.movieId}?error=Failed to create review`);
+        
+        if (req.query.recommend === 'true' || req.query.recommend === 'false') {
+            query.recommend = req.query.recommend === 'true';
         }
-    },
 
-    // Delete a review
-    async delete(req, res) {
-        try {
-            const review = await Review.findById(req.params.id);
-            
-            // Check if review exists and user owns it
-            if (!review || review.user.toString() !== req.user._id.toString()) {
-                return res.redirect(`/movies/${review.movieId}?error=Unable to delete review`);
+        // Date filter
+        if (req.query.dateFrom || req.query.dateTo) {
+            query.watchedAt = {};
+            if (req.query.dateFrom) {
+                query.watchedAt.$gte = new Date(req.query.dateFrom);
             }
-
-            await review.deleteOne();
-            res.redirect(`/movies/${review.movieId}?message=Review deleted successfully`);
-        } catch (error) {
-            res.redirect('back');
+            if (req.query.dateTo) {
+                query.watchedAt.$lte = new Date(req.query.dateTo);
+            }
         }
-    },
 
-    // Edit a review (show edit form)
-    async edit(req, res) {
-        try {
-            const review = await Review.findById(req.params.id);
-            
-            // Check if review exists and user owns it
-            if (!review || review.user.toString() !== req.user._id.toString()) {
-                return res.redirect(`/movies/${review.movieId}?error=Unable to edit review`);
+        // Sorting
+        const sortOptions = {
+            newest: { createdAt: -1 },
+            oldest: { createdAt: 1 },
+            'highest-rated': { rating: -1 },
+            'lowest-rated': { rating: 1 },
+            'movie-title': { movieTitle: 1 }
+        };
+        
+        const sortBy = sortOptions[req.query.sort] || sortOptions.newest;
+
+        // Get total count for pagination
+        const totalReviews = await Review.countDocuments(query);
+        const totalPages = Math.ceil(totalReviews / limit);
+
+        const reviews = await Review.find(query)
+            .populate('user')  
+            .sort(sortBy)
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.render('reviews/index', {
+            reviews,
+            title: 'Review History',
+            page,
+            totalPages,
+            filters: {
+                rating: req.query.rating,
+                recommend: req.query.recommend,
+                dateFrom: req.query.dateFrom,
+                dateTo: req.query.dateTo,
+                sort: req.query.sort || 'newest'
             }
-
-            res.render('reviews/edit', { 
-                review,
-                title: 'Edit Review'
-            });
-        } catch (error) {
-            res.redirect('back');
-        }
-    },
-
-    // Update a review
-    async update(req, res) {
-        try {
-            const review = await Review.findById(req.params.id);
-            
-            // Check if review exists and user owns it
-            if (!review || review.user.toString() !== req.user._id.toString()) {
-                return res.redirect(`/movies/${review.movieId}?error=Unable to update review`);
-            }
-
-            // Update the review fields
-            review.rating = parseInt(req.body.rating);
-            review.review = req.body.review;
-            review.title = req.body.title;
-            review.recommend = req.body.recommend === 'true';
-            review.spoilerAlert = req.body.spoilerAlert === 'true';
-            if (req.body.watchedAt) review.watchedAt = req.body.watchedAt;
-
-            await review.save();
-            res.redirect(`/movies/${review.movieId}?message=Review updated successfully`);
-        } catch (error) {
-            res.redirect(`back?error=Failed to update review`);
-        }
-    },
-
-    // Get all public reviews
-    async getAllReviews(req, res) {
-        try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = 12;
-            const query = {};
-            
-            // Apply filters
-            if (req.query.rating) {
-                query.rating = parseInt(req.query.rating);
-            }
-            
-            if (req.query.recommend === 'true' || req.query.recommend === 'false') {
-                query.recommend = req.query.recommend === 'true';
-            }
-
-            // Date filter
-            if (req.query.dateFrom || req.query.dateTo) {
-                query.watchedAt = {};
-                if (req.query.dateFrom) {
-                    query.watchedAt.$gte = new Date(req.query.dateFrom);
-                }
-                if (req.query.dateTo) {
-                    query.watchedAt.$lte = new Date(req.query.dateTo);
-                }
-            }
-
-            // Sorting
-            const sortOptions = {
-                newest: { createdAt: -1 },
-                oldest: { createdAt: 1 },
-                'highest-rated': { rating: -1 },
-                'lowest-rated': { rating: 1 },
-                'movie-title': { movieTitle: 1 }
-            };
-            
-            const sortBy = sortOptions[req.query.sort] || sortOptions.newest;
-
-            const reviews = await Review.find(query)
-                .sort(sortBy)
-                .skip((page - 1) * limit)
-                .limit(limit)
-                .populate('user', 'username');
-
-            const totalReviews = await Review.countDocuments(query);
-
-            res.render('reviews/all', { 
-                reviews,
-                page,
-                totalPages: Math.ceil(totalReviews / limit),
-                title: 'Community Reviews',
-                filters: {
-                    rating: req.query.rating,
-                    recommend: req.query.recommend,
-                    dateFrom: req.query.dateFrom,
-                    dateTo: req.query.dateTo,
-                    sort: req.query.sort || 'newest'
-                }
-            });
-        } catch (error) {
-            res.render('error', {
-                error: 'Unable to fetch reviews at this time.',
-                title: 'Error'
-            });
-        }
-    },
-
-    // Show a specific review
-    async show(req, res) {
-        try {
-            const review = await Review.findById(req.params.id)
-                .populate('user')
-                .populate({
-                    path: 'comments.user',
-                    select: 'username'
-                });
-            if (!review) {
-                return res.redirect('/reviews');
-            }
-            res.render('reviews/show', { review, title: review.movieTitle });
-        } catch (err) {
-            console.error(err);
-            res.redirect('/reviews');
-        }
-    },
-
-    // Toggle like on a review
-    async toggleLike(req, res) {
-        try {
-            const review = await Review.findById(req.params.id)
-                .populate('user');
-            
-            if (!review) {
-                return res.redirect('back');
-            }
-
-            const userLikeIndex = review.likes.indexOf(req.user._id);
-            if (userLikeIndex === -1) {
-                review.likes.push(req.user._id);
-            } else {
-                review.likes.splice(userLikeIndex, 1);
-            }
-            await review.save();
-            
-            res.redirect('back');
-        } catch (error) {
-            res.redirect('back');
-        }
-    },
-
-    // Add a comment to a review
-    async addComment(req, res) {
-        try {
-            const review = await Review.findById(req.params.id);
-            if (!review) {
-                return res.redirect('/reviews');
-            }
-            
-            review.comments.push({
-                user: req.user._id,
-                content: req.body.content
-            });
-            
-            await review.save();
-            res.redirect(`/reviews/${review._id}`);
-        } catch (err) {
-            console.error(err);
-            res.redirect(`/reviews/${req.params.id}`);
-        }
-    },
-
-    // Delete a comment from a review
-    async deleteComment(req, res) {
-        try {
-            const review = await Review.findById(req.params.id);
-            if (!review) {
-                return res.redirect('/reviews');
-            }
-
-            const comment = review.comments.id(req.params.commentId);
-            if (!comment) {
-                return res.redirect(`/reviews/${review._id}`);
-            }
-
-            // Check if the current user is the comment author
-            if (!req.user._id.equals(comment.user)) {
-                return res.redirect(`/reviews/${review._id}`);
-            }
-
-            review.comments.pull(req.params.commentId);
-            await review.save();
-            res.redirect(`/reviews/${review._id}`);
-        } catch (err) {
-            console.error(err);
-            res.redirect(`/reviews/${req.params.id}`);
-        }
+        });
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to fetch reviews'
+        });
     }
-};
+});
+
+// Get all public reviews
+router.get('/all', async function(req, res) {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = 12;
+        const query = {};
+        
+        // Apply filters
+        if (req.query.rating) {
+            query.rating = parseInt(req.query.rating);
+        }
+        
+        if (req.query.recommend === 'true' || req.query.recommend === 'false') {
+            query.recommend = req.query.recommend === 'true';
+        }
+
+        // Date filter
+        if (req.query.dateFrom || req.query.dateTo) {
+            query.watchedAt = {};
+            if (req.query.dateFrom) {
+                query.watchedAt.$gte = new Date(req.query.dateFrom);
+            }
+            if (req.query.dateTo) {
+                query.watchedAt.$lte = new Date(req.query.dateTo);
+            }
+        }
+
+        // User filter
+        if (req.query.user) {
+            query.user = req.query.user;
+        }
+
+        // Movie filter
+        if (req.query.movie) {
+            query.movieId = req.query.movie;
+        }
+
+        // Sorting
+        const sortOptions = {
+            newest: { createdAt: -1 },
+            oldest: { createdAt: 1 },
+            'highest-rated': { rating: -1 },
+            'lowest-rated': { rating: 1 },
+            'most-liked': { likesCount: -1 }
+        };
+        
+        const sortBy = sortOptions[req.query.sort] || sortOptions.newest;
+
+        // Get total count for pagination
+        const totalReviews = await Review.countDocuments(query);
+        const totalPages = Math.ceil(totalReviews / limit);
+
+        const reviews = await Review.find(query)
+            .populate('user')
+            .sort(sortBy)
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.render('reviews/all', {
+            reviews,
+            title: 'All Reviews',
+            page,
+            totalPages,
+            filters: {
+                rating: req.query.rating,
+                recommend: req.query.recommend,
+                dateFrom: req.query.dateFrom,
+                dateTo: req.query.dateTo,
+                user: req.query.user,
+                movie: req.query.movie,
+                sort: req.query.sort || 'newest'
+            }
+        });
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to fetch reviews'
+        });
+    }
+});
+
+// Show a specific review
+router.get('/:id', async function(req, res) {
+    try {
+        const review = await Review.findById(req.params.id)
+            .populate('user')
+            .populate('comments.user');
+        
+        if (!review) {
+            return res.redirect('/reviews');
+        }
+        
+        res.render('reviews/show', {
+            review,
+            title: `Review for ${review.movieTitle}`
+        });
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to load review'
+        });
+    }
+});
+
+// Create a new review
+router.post('/', async function(req, res) {
+    try {
+        req.body.user = req.user._id;
+        const review = await Review.create(req.body);
+        res.redirect(`/movies/${review.movieId}`);
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to create review'
+        });
+    }
+});
+
+// Delete a review
+router.delete('/:id', async function(req, res) {
+    try {
+        await Review.findOneAndDelete({
+            _id: req.params.id,
+            user: req.user._id
+        });
+        res.redirect('/reviews');
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to delete review'
+        });
+    }
+});
+
+// Edit a review (show edit form)
+router.get('/:id/edit', async function(req, res) {
+    try {
+        const review = await Review.findOne({
+            _id: req.params.id,
+            user: req.user._id
+        });
+        if (!review) {
+            return res.redirect('/reviews');
+        }
+        res.render('reviews/edit', {
+            review,
+            title: 'Edit Review'
+        });
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to load review'
+        });
+    }
+});
+
+// Update a review
+router.put('/:id', async function(req, res) {
+    try {
+        const review = await Review.findOneAndUpdate(
+            {
+                _id: req.params.id,
+                user: req.user._id
+            },
+            req.body,
+            { new: true }
+        );
+        res.redirect(`/movies/${review.movieId}`);
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to update review'
+        });
+    }
+});
+
+// Add a comment to a review
+router.post('/:id/comments', async function(req, res) {
+    try {
+        const review = await Review.findById(req.params.id);
+        if (!review) {
+            return res.status(404).json({ error: 'Review not found' });
+        }
+
+        review.comments.push({
+            content: req.body.content,
+            user: req.user._id
+        });
+
+        await review.save();
+        res.redirect(`/reviews/${review._id}`);
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to add comment'
+        });
+    }
+});
+
+// Delete a comment from a review
+router.delete('/:reviewId/comments/:commentId', async function(req, res) {
+    try {
+        const review = await Review.findById(req.params.reviewId);
+        if (!review) {
+            return res.status(404).json({ error: 'Review not found' });
+        }
+
+        const comment = review.comments.id(req.params.commentId);
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        if (comment.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
+
+        comment.remove();
+        await review.save();
+        res.redirect(`/reviews/${review._id}`);
+    } catch (error) {
+        res.render('error', {
+            title: 'Error',
+            error: 'Unable to delete comment'
+        });
+    }
+});
+
+// Toggle like on a review
+router.post('/:id/like', async function(req, res) {
+    try {
+        const review = await Review.findById(req.params.id)
+            .populate('user');
+        
+        if (!review) {
+            return res.redirect('back');
+        }
+
+        const userLikeIndex = review.likes.indexOf(req.user._id);
+        if (userLikeIndex === -1) {
+            review.likes.push(req.user._id);
+        } else {
+            review.likes.splice(userLikeIndex, 1);
+        }
+        await review.save();
+        
+        res.redirect('back');
+    } catch (error) {
+        res.redirect('back');
+    }
+});
+
+module.exports = router;

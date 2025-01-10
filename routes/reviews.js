@@ -1,20 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const reviewsCtrl = require('../controllers/reviews');
+const reviewsRouter = require('../controllers/reviews');
 const ensureSignedIn = require('../middleware/ensure-signed-in');
 
-// Reviews - RESTful routes
-router.get('/', ensureSignedIn, reviewsCtrl.index);         
-router.get('/all', reviewsCtrl.getAllReviews);              
-router.post('/', ensureSignedIn, reviewsCtrl.create);        
-router.get('/:id', reviewsCtrl.show);                       
-router.get('/:id/edit', ensureSignedIn, reviewsCtrl.edit); 
-router.put('/:id', ensureSignedIn, reviewsCtrl.update);     
-router.delete('/:id', ensureSignedIn, reviewsCtrl.delete);  
+// Apply middleware to protected routes
+router.use('/', ensureSignedIn, (req, res, next) => {
+    // Skip auth check for public routes
+    if (req.path === '/all' || (req.path.match(/^\/\w+$/) && req.method === 'GET')) {
+        return next('route');
+    }
+    next();
+});
 
-// Review interactions
-router.post('/:id/like', ensureSignedIn, reviewsCtrl.toggleLike);      
-router.post('/:id/comments', ensureSignedIn, reviewsCtrl.addComment);  
-router.delete('/:id/comments/:commentId', ensureSignedIn, reviewsCtrl.deleteComment); 
+// Use the reviews controller router
+router.use('/', reviewsRouter);
 
 module.exports = router;
